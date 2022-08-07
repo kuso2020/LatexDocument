@@ -1,0 +1,655 @@
+% !Mode:: "TeX:UTF-8"
+% !TEX program  = xelatex
+% !BIB program = bibtex
+%\documentclass{cumcmthesis}
+\documentclass[withoutpreface,bwprint]{cumcmthesis} %去掉封面与编号页
+
+\usepackage[framemethod=TikZ]{mdframed}
+\usepackage{url}   % 网页链接
+\usepackage{subcaption} % 子标题
+\numberwithin{equation}{subsection}
+\newcommand{\toper}{\noindent \textbf}
+\renewcommand\theequation{\arabic{subsection}-\arabic{equation}}
+
+\title{炉温曲线指标设定控制策略}
+
+
+
+\begin{document}
+
+ \maketitle
+ \begin{abstract}
+本文研究的是回焊炉的温度与传送带运送电路板速度的最佳策略问题，通过建立电子元件和回焊炉内空气的热传导模型，求解得到不同条件和目标下的最优炉温曲线。
+
+\textbf{针对问题一：}建立了\textbf{两个热传导模型}，首先对焊接区域建立三维热传导模型，得到焊接区域中心温度随时间变化的规律。由于电路板边界温度与炉内空气温度有关，将回焊炉内部分10个温度区域处理，对每个区域空气温度建立热传导模型，\textbf{空气温度随位置变化的值作为焊接区域热传导模型的边界条件，}建立分段模型。用\textbf{有限差分法}求解热传导模型的数值解，用最小二乘法处理附件数据确定模型中的每一段参数取值，由此求解得焊接区域中心温度随时间变化规律的数值解。最终求解得：小温区3、6、7中点温度分别为：\textbf{129.82℃、167.78℃、184.53℃}；小温区8结束处温度为：\textbf{209.41℃}。
+
+\textbf{针对问题二:}在问题一的机理模型基础上，在满足制程界限的约束下，以过炉速度最大为目标，以制程界限为约束条件，通过控制速度参数对模型使用\textbf{遍历算法}，遍历得到速度$v$的最大值。最终求解得最大速度为：\textbf{78.26cm/min。}
+
+\textbf{针对问题三：}由题意要求曲线中大于217℃的覆盖面积最小，曲线面积为时间对温度的积分。以该段函数面积最小为目标，满足制程界限为约束条件，建立优化模型。对每个小温区的温度和过炉速度进行\textbf{循环遍历求解}，得到满足目标以及约束的最优温度设定及过炉速度，并求出该初始参数下的最优炉温曲线。得到设定温度为：小温度1~5：\textbf{169℃}；小温区6: \textbf{180℃}；小温区7：\textbf{240℃}；小温区8~9：\textbf{216℃}，传送带过炉速度为：\textbf{85cm/min}时，炉温曲线上超过217℃到峰值温度所覆盖的面积最小为：\textbf{429.73}。
+
+
+\textbf{关键词}：热传导模型、优化模型、循环遍历求解、初始参数控制策略。
+\end{abstract}
+
+
+
+
+
+\section{问题重述}
+
+由于本题中几何物体具有对称性，固我们我们可转化为二维平面进行计算。
+
+由于观察天体距离射电望远镜的距离可以定义为极远，所以我们可以假设宇宙射线传播方向平行于天体和圆心的连线。
+
+由于抛物面的性质我们可以得知当宇宙射线延铅垂方向射向射电望远镜时，其在经历一次反射后通过抛物面的焦点。并设定抛物面的口径为300m。
+
+
+
+\subsection{问题的提出}
+
+
+
+
+\begin{enumerate}[label=(\arabic*)]
+\item  当待观测天体S位于基准球面正上方，即$\alpha = 0°, \beta = 90°$时，结合考虑反射面板调节因
+素，确定理想抛物面。
+	
+\item  当待观测天体S位于$\alpha = 36.795°, \beta = 78.169°$时，确定理想抛物面。建立反射面板调节
+模型，调节相关促动器的伸缩量，使反射面尽量贴近该理想抛物面。将理想抛物面的顶点坐标，
+以及调节后反射面 300 米口径内的主索节点编号、位置坐标、各促动器的伸缩量等结果按照规
+定的格式（见附件 4）保存在“result.xlsx”文件中。
+	
+\item  基于第 2 问的反射面调节方案，计算调节后馈源舱的接收比，即馈源舱有效区域接收到
+的反射信号与 300 米口径内反射面的反射信号之比，并与基准反射球面的接收比作比较。
+	
+\end{enumerate}
+
+
+
+
+\section{问题分析}
+\subsection{问题一分析}
+为解决问题一，我们需要解决：（i）求解出在满足放射面板调节约束情况下的移动前后差值之和的最小值。
+
+（i）的求解过程：根据抛物线方程和直线方程的求解我们可以得出圆上各点移动到理想抛物线的坐标。再对主索节点前后移动距离求和并判断促动器的伸缩量是否在$-0.6m\sim0.6m$
+
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=.85\textwidth]{tui1}
+    \caption{问题一求解流程}
+    \label{fig:1}
+\end{figure}
+
+
+\subsection{问题2的分析}
+由于我们假设放射面近似的看作平面，所以我们无法让反射面完美的与理想抛物面进行拟合。在问题2中我们观察方位角$\alpha = 36.795°$,仰角$ \beta = 78.169°$的天体，我们可以通过旋转坐标系使天体位于基准球面的正上方，进而得到新的抛物面。我们可以先将主索节点移动到问题1求出的理想抛物面上，再通过约束条件进行判断。根据判断对主索节点进行调整，并求出主索节点编号、位置坐标、各促动器的伸缩量等结果。
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=.85\textwidth]{tui1}
+	\caption{问题二求解流程}
+	\label{fig:1}
+\end{figure}
+
+\subsection{问题3的分析}
+按问题2的方案进行调整后，得到各反射面的位置信息，结合形状信息，可以求得，各反射面
+
+\section{模型假设}
+
+\begin{enumerate}[label=(\arabic*)]
+\item 宇宙射线以平行于天体于圆心的连线射向射电望远镜；
+\item 反射面上的圆孔对宇宙射线的反射无影响；
+\item 反射面板近似的看作平面；
+\item 模型只考虑几何影响，不考虑力学影响。
+\item 放射面近似的看作平面
+
+	
+\end{enumerate}
+
+
+
+
+
+
+\section{符号说明}
+
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{ccc}
+		\toprule[1.5pt]
+		符号   &    表示含义 &   单位  \\
+		\midrule[1pt]
+		$u$ & 物体温度 & \textcelsius  \\
+		$T_{n}$ & 回焊炉边界温度 & \textcelsius \\
+		$x$& 沿传送带方向的横坐标 &  $cm$ \\
+		$y$& 垂直于传送带方向的纵坐标 &  $cm$   \\
+		$l$& 所焊接电路板的厚度 &   $cm$  \\
+		$v$& 传送带的过炉速度 &   $cm/min$  \\
+		$d$& 划定区域的长度 &    $cm$ \\
+		$s$& 焊接区域中心走过长度范围 &   $cm$  \\
+		$S$& 炉温曲线超过217℃到峰值温度的覆盖面积 &   $cm^2$  \\
+		\bottomrule[1.5pt]
+		
+	\end{tabular}
+\end{table}
+
+\section{模型准备}
+
+\subsection{模型准备}
+（1）抛物线方程：
+因为理想抛物面具有对称性，所以抛物面方程可以压缩为抛物线方程进行讨论，由抛物面方程$x^2=2py$我们可以得到理想抛物线的方程:
+\begin{equation}
+	x^2=2(F+\delta)(z-(R+\delta))
+\end{equation}
+
+
+(2)评价标准：
+%由于我们假设圆点为坐标零点，所以我们可以得知圆心上任意一点到圆心的直线方程：
+%\begin{equation}
+%	y=\frac{x_0{}}{y_0{}}x
+%\end{equation}
+
+评价标准为圆上各点与其对应的理想抛物面上的点之间的距离的平方合,其中$x_2{},y_2{}$为圆上各点在理想抛物面上对应点的坐标。\\距离的平方合公式为：
+
+\begin{equation}
+	d=\sqrt{(y_2-y_0)^{2}+(x_2-x_0)^{2}}
+\end{equation}
+
+(3)三维旋转矩阵：
+
+我们对射电望远镜整体进行三维旋转使得天体位于基准球面正上方,转动方向为逆时针方向。
+\begin{equation}
+	R_{z}=\left(
+	\begin{matrix}
+		\cos\alpha & \sin\alpha & 0\\
+		-\sin\alpha & \cos\alpha & 0\\
+		0 & 0 & 1\\
+	\end{matrix}\right)
+\end{equation}
+
+\begin{equation}
+	R_{y}=\left(
+	\begin{matrix}
+		\cos(\frac{\pi}{2}-\beta) & 0 & -\sin(\frac{\pi}{2}-\beta)\\
+		0 & 1 & 0\\
+		\sin(\frac{\pi}{2}-\beta) & 0 & \cos(\frac{\pi}{2}-\beta)\\
+	\end{matrix}\right)
+\end{equation}
+
+(4)证明圆点，促动器上端点，下断点三点共线：
+
+导出附录2，并设促动器上端点的坐标为$(x_1,y_1,z_1)$,促动器下端点的坐标为$(x_2,y_2,z_2)$，通过公式
+
+\begin{equation}
+	\frac{x_2}{x_1}=\frac{y_2}{y_1}=\frac{z_2}{z_1}
+\end{equation}
+计算得不满足共线的点一共有66个，固可近似认为所有点都共线。
+
+(5)反射线公式：
+先求$\vec{V}$在$\vec{N}$方向的投影：
+\begin{equation}
+	\vec{V'}=(\vec{V}\vec{N})\vec{N}
+\end{equation}
+
+易证明-$\vec{V}+\vec{R}=2\vec{V'}$故：
+
+\begin{equation}
+	\vec{R}=(2\vec{V'}+\vec{V})=2(\vec{V}\vec{N})\vec{N}+\vec{V}
+\end{equation}
+
+那么反射线可以表示为:
+
+\begin{equation}
+\frac{x-x_0}{R_x}=\frac{y-y_0}{R_y}=\frac{z-z_0}{R_z}
+\end{equation}
+\\
+$x,y,z$为反射线的向量。\\
+$x_0,y_0,z_0$为射线与反射面的交点\\
+$R_x,R_y,R_z$为反射线的方向向量\\
+
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=.85\textwidth]{xiangliang}
+	\caption{反射角示意图}
+	\label{fig:3}
+\end{figure}
+
+\section{模型的建立与求解}
+
+\subsection{问题一模型建立}
+
+\subsubsection{移动后各点坐标}
+
+
+圆上任一点到圆心的直线方程可表示为：
+\begin{equation}
+	y=\frac{x_0{}}{y_0{}}x
+\end{equation}
+\\
+
+根据模型准备中的抛物线方程和过圆心的直线方程，构造出方程组：
+%\begin{gather}
+%	x^2=4(F+\delta)(y-(R+\delta))\\
+%	y=\frac{x_0{}}{y_0{}}x
+%\end{gather}
+
+\begin{equation}
+	\left\{\begin{array}{l}
+	x^2=4(F+\delta)(y-(R+\delta))\\
+	y=\frac{x_0{}}{y_0{}}x
+	\end{array}\right.
+\end{equation}
+
+
+设$F+\delta=F_1{},R+\delta=R_1{}$,进行求解可以得出关于$x_2{},y_2{}$的表达式:
+\begin{equation}
+	\left\{\begin{array}{l}
+		x_2{}=\frac{(2(F_1y_0+\sqrt{(F_1(F_1\sqrt{y_0^{2}}+R_1x_0^{2})}))}{x_0}\\
+		x_2{}=\frac{(2(F_1y_0-\sqrt{(F_1(F_1\sqrt{y_0^{2}}+R_1x_0^{2})}))}{x_0}\\
+		y_2{}=\frac{x_0{}}{y_0{}}x_{2}\\
+	\end{array}\right.
+\end{equation}
+
+
+根据客观实际可以得知$x_2$与$y_2$同号，所以我们可以剔除第二行表达式，得最终结果：
+\begin{equation}
+	\left\{\begin{array}{l}
+		x_2{}=\frac{(2(F_1y_0+\sqrt{(F_1(F_1\sqrt{y_0}+R_1x_0^{2})}))}{x_0}\\
+		y_2{}=\frac{x_0{}}{y_0{}}x_{2}\\
+	\end{array}\right.
+\end{equation}
+
+
+\subsubsection{求解理想抛物线}
+%我们求取主索节点移动前后的距离并对其进行求合,其中距离公式为：
+
+%\begin{equation}
+%d=\sqrt{(y_2-y_0)^{2}+(x_2-x_0)^{2}}
+%\end{equation}
+
+对模型准备中的评估标准进行求合，并对促动器的变化量进行约束，约束条件为：
+
+\begin{equation}
+	-0.6\le\delta\le0.6
+\end{equation}
+
+当标准评估合为最小时此时的抛物线为理想抛物线。最终得到理想抛物线的$\delta$为$0.3842$。理想抛物线的方程式为；
+\begin{equation}
+	x^{2}=561.4824(y-300.7842)
+\end{equation}
+
+\subsection{问题二模型建立}
+
+\subsubsection{旋转前的散点图}
+
+根据附录二我们可以知道再进行旋转前主索节点的分布
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=.85\textwidth]{tui2}
+	\caption{旋转前的散点图}
+	\label{fig:2}
+\end{figure}
+
+\subsubsection{两节点是否相邻的判断}
+根据附录3，我们可通过遍历判断两点是否相邻。
+
+\subsubsection{对整体进行旋转}
+导出附录2中的数组，令其左乘三维旋转矩阵得到旋转后的坐标。
+\begin{equation}
+data_1=R_yR_zdata
+\end{equation}\\
+\\
+$data$: 旋转前各点的坐标。\\
+$data_1$: 旋转后各点的坐标。
+
+\subsubsection{旋转后的散点图}
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=.85\textwidth]{tui2}
+	\caption{旋转后的散点图}
+	\label{fig:2}
+\end{figure}
+
+\subsubsection{坐标转化为向量形式}
+由于圆点，促动器上端点，下段点三点共线。我们可以把坐标转化为向量形式，圆心到主索节点的向量为$\lambda\vec{U}$,其中$\vec{U}$为圆上各点的向量，$\vec{U}=(\vec{x},\vec{y},\vec{z})$并定义向量为$\lambda$,当$\lambda=1$时向量为原长，当$\lambda\le1$时向量缩短,当$\lambda\ge1$时向量增长。
+
+\subsubsection{求解$\lambda$的方程组}
+根据抛物线方程合过圆点的直线方程：
+
+\begin{equation}
+	\left\{\begin{array}{l}
+	\lambda x^2=2(F+\delta)(\lambda z-(R+\delta))\\
+	\lambda	y=\frac{x_0{}}{y_0{}}\lambda x
+	\end{array}\right.
+\end{equation}
+
+设$F+\delta=F_1{},R+\delta=R_1{}$,，求解出$\lambda$的表达式：
+
+\begin{equation}
+	\left\{\begin{array}{l}
+	\lambda=\frac{(2(x^{2}+y^{2}))(F_1(z+\sqrt{(4R_1x^{2}+4R_1y^{2}+F_1z^{})}))}{\sqrt{F_1}}\\
+	\lambda=\frac{(2(x^{2}+y^{2}))(F_1(z-\sqrt{(4R_1x^{2}+4R_1y^{2}+F_1z^{})}))}{\sqrt{F_1}}	
+	\end{array}\right.
+\end{equation}
+
+根据客观实际,我们可以剔除第二行表达式，得最终结果：
+
+\begin{equation}
+		\lambda=\frac{(2(x^{2}+y^{2}))(F_1(z+\sqrt{(4R_1x^{2}+4R_1y^{2}+F_1z^{})}))}{\sqrt{F_1}}
+\end{equation}
+
+\subsubsection{求出理想抛物面的$\lambda$值}
+代入第一问中求出的$\delta$值，和旋转后的坐标，求出各向量的$\lambda$值。
+
+\subsubsection{对$\lambda$的约束}
+
+(1)促动器伸缩量限制:
+
+根据促动器伸缩范围为$(-0.6,0.6)$，我们可以得出$\lambda$的变化范围为$(0.9980,1.0019)$
+
+(2)判断理想抛物面的$\lambda$是否满足约束：
+
+通过求解最终有5个点：$B73,B75,A97,C94,D214$不满足约束。由于数量过小所以暂时不做讨论。
+
+(3)主索节点变化幅度限制：
+
+主索节点调节后，相邻节点之间的距离可能会发生微小变化，但其变化幅度不能超过 0.07\%。根据公式：
+
+\begin{equation}
+	\frac{|\lambda_2^{1}\vec{U_2}-\lambda_1^{1}\vec{U_1}|-|\lambda_2\vec{U_2}-\lambda_1\vec{U_1}|}{|\lambda_2\vec{U_2}-\lambda_1\vec{U_1}|}\le0.07\%
+\end{equation} \\
+\\
+$\lambda_2^{1}$:三角反射面中一点变化后的$\lambda$值。\\
+$\lambda_1^{1}$:三角反射面中另外一点变化后的$\lambda$值。\\
+$\lambda_2$:三角反射面中一点变化前的$\lambda$值。\\
+$\lambda_2$:三角反射面中另一点变化前的$\lambda$值。\\
+$\vec{U}_2$:三角反射面中一点向量。\\
+$\vec{U}_1$:三角反射面中另一点向量。\\
+
+得到的结果为：653个点不满足约束条件，由于误差过大，所以我们对$\lambda$进行整体调节。
+
+(4)$\lambda$进行整体调节：
+
+由$(2-5)$我们可以得知变化幅度的差异来自于相邻两点之间$\lambda$值的差异过大，所以我们可以让$\lambda$乘以一个关于$\lambda$的线性函数，使大于1的$\lambda$乘以一个小于1的数，使小于1的$\lambda$乘以一个大于1的数，使等于1的$\lambda$乘以一个等于1的数，最终使各点的$\lambda$值向1收敛，达到缩小变化幅度的目的。
+
+构造关于$\lambda$的线性函数：
+
+\begin{equation}
+1-(\frac{\lambda-1}{b})
+\end{equation}
+
+构造函数：
+
+\begin{equation}
+	(1-(\frac{\lambda-1}{b}))\lambda
+\end{equation}
+
+我们对$b$进行遍历，并记录下当b值不同时，所对应各点的$\lambda$值的大小。再代入到$(2-5)$进行判断。
+
+\subsubsection{第三题模型建立}
+
+根据第二题的结果，我们假设宇宙射线随机的射向反射板代入反射角公式求解出结果：
+
+
+矩阵的输入也不难。
+\[
+\mathbf{X} = \left(
+    \begin{array}{cccc}
+    x_{11} & x_{12} & \ldots & x_{1n}\\
+    x_{21} & x_{22} & \ldots & x_{2n}\\
+    \vdots & \vdots & \ddots & \vdots\\
+    x_{n1} & x_{n2} & \ldots & x_{nn}\\
+    \end{array} \right)
+\]
+
+分段函数这些可以用 \verb|case| 环境，但是它要放在数学环境里面。
+\[
+f(x) =
+    \begin{cases}
+        0 &  x \text{为无理数} ,\\
+        1 &  x \text{为有理数} .
+    \end{cases}
+\]
+在数学环境里面，字体用的是数学字体，一般与正文字体不同。假如要公式里面有个别文字，则需要把这部分放在 \verb|text| 环境里面，即 \verb|\text{文本环境}| 。
+
+公式中个别需要加粗的字母可以用 \verb|$\bm{math symbol}$| 。如 $ \alpha a\bm{\alpha a} $ 。
+
+以上仅简单介绍了基础的使用，对于更复杂的需求，可以阅读相关的宏包手册，如 \href{http://texdoc.net/texmf-dist/doc/latex/amsmath/amsldoc.pdf}{amsmath}。
+
+希腊字母这些如果不熟悉，可以去查找符号文件 \href{http://mirrors.ctan.org/info/symbols/comprehensive/symbols-a4.pdf}{symbols-a4.pdf} ，也可以去 \href{http://detexify.kirelabs.org/classify.html}{detexify} 网站手写识别。另外还有数学公式识别软件 \href{https://mathpix.com/}{mathpix} 。
+
+下面简单介绍一下定理、证明等环境的使用。
+\begin{definition}
+    定义环境
+    \label{def:nosense}
+\end{definition}
+\cref{def:nosense}除了告诉你怎么使用这个环境以外，没有什么其它的意义。
+
+除了 definition 环境，还可以使用 theorem 、lemma、corollary、assumption、conjecture、axiom、principle、problem、example、proof、solution 这些环境，根据论文的实际需求合理使用。
+
+\begin{theorem}
+    这是一个定理。
+    \label{thm:example}
+\end{theorem}
+由\cref{thm:example}我们知道了定理环境的使用。
+
+\begin{lemma}
+    这是一个引理。
+    \label{lem:example}
+\end{lemma}
+由\cref{lem:example}我们知道了引理环境的使用。
+
+\begin{corollary}
+    这是一个推论。
+    \label{cor:example}
+\end{corollary}
+由\cref{cor:example}我们知道了推论环境的使用。
+
+\begin{assumption}
+    这是一个假设。
+    \label{asu:example}
+\end{assumption}
+由\cref{asu:example}我们知道了假设环境的使用。
+
+\begin{conjecture}
+    这是一个猜想。
+    \label{con:example}
+\end{conjecture}
+由\cref{con:example}我们知道了猜想环境的使用。
+
+\begin{axiom}
+    这是一个公理。
+    \label{axi:example}
+\end{axiom}
+由\cref{axi:example}我们知道了公理环境的使用。
+
+\begin{principle}
+    这是一个定律。
+    \label{pri:example}
+\end{principle}
+由\cref{pri:example}我们知道了定律环境的使用。
+
+\begin{problem}
+    这是一个问题。
+    \label{pro:example}
+\end{problem}
+由\cref{pro:example}我们知道了问题环境的使用。
+
+\begin{example}
+    这是一个例子。
+    \label{exa:example}
+\end{example}
+由\cref{exa:example}我们知道了例子环境的使用。
+
+\begin{proof}
+    这是一个证明。
+    \label{prf:example}
+\end{proof}
+由\cref{prf:example}我们知道了证明环境的使用。
+
+\begin{solution}
+    这是一个解。
+    \label{sol:example}
+\end{solution}
+由\cref{sol:example}我们知道了解环境的使用。
+
+
+
+\section{其它小功能}
+\subsection{脚注}
+
+利用 \verb|\footnote{具体内容}| 可以生成脚注\footnote{脚注可以补充说明一些东西}。
+
+\subsection{部分特殊符号的输入}
+
+每门编程语言都会把部分符号拿来使用，要输出符号本身就需要转义， \TeX{}也不例外。
+
+\begin{table}[!ht]
+	\centering
+	\begin{tabular}{cc}
+		\toprule
+		符号            &  输入                   \\
+		\midrule
+		\%              &  \verb|\%|             \\
+		\&              &  \verb|\&|             \\
+		\$              &  \verb|\$|             \\
+		\{              &  \verb|\{|             \\
+		\}              &  \verb|\}|             \\
+		\#              &  \verb|\#|             \\
+		\_              &  \verb|\_|             \\
+		\^{}            &  \verb|\^{}|           \\
+		\~{}            &  \verb|\~{}|           \\
+		\textbackslash  &  \verb|\textbackslash| \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\subsection{无序列表与有序列表}
+
+无序列表是这样的：
+\begin{itemize}
+    \item one
+    \item two
+    \item ...
+\end{itemize}
+
+有序列表是这样子的：
+\begin{enumerate}
+    \item one
+    \item two
+    \item ...
+\end{enumerate}
+
+\subsection{字体加粗与斜体}
+
+如果想强调部分内容，可以使用加粗的手段来实现。加粗字体可以用 \verb|\textbf{加粗}| 来实现。例如： \textbf{这是加粗的字体。 This is bold fonts} 。
+
+中文字体没有斜体设计，但是英文字体有。\textit{斜体 Italics}。
+
+\section{参考文献与引用}
+
+参考文献对于一篇正式的论文来说是必不可少的，在建模中重要的参考文献当然应该列出。\LaTeX{}在这方面的功能也是十分强大的，下面进介绍一个比较简单的参考文献制作方法。有兴趣的可以学习 \verb|bibtex| 或 \verb|biblatex| 的使用。
+
+\LaTeX{}的入门书籍可以看《\LaTeX{}入门》\cite{liuhaiyang2013latex}。这是一个简单的引用，用 \verb|\cite{bibkey}| 来完成。要引用成功，当然要维护好 bibitem 了。下面是个简单的例子。
+
+\newpage
+
+%参考文献
+\begin{thebibliography}{9}%宽度9
+    \bibitem{yangshimin2006}杨世铭, 陶文铨. 传热学(第4版) [Heat Transfer][M]. 高等教育出版社, 2006.
+    \bibitem{}李杉. 不同边界条件下热方程的解法与应用 [D]. 山东大学, 2020.
+\end{thebibliography}
+
+\newpage
+%附录
+\begin{appendices}
+
+\section{模板所用的宏包}
+\begin{table}[htbp]
+    \centering
+    \caption{宏包罗列}
+    \begin{tabular}{ccccc}
+        \toprule
+        \multicolumn{5}{c}{模板中已经加载的宏包} \\
+        \midrule
+        amsbsy & amsfonts & {amsgen} & {amsmath} & {amsopn} \\
+        amssymb & amstext & {appendix} & {array} & {atbegshi} \\
+        atveryend & auxhook & {bigdelim} & {bigintcalc} & {bigstrut} \\
+        bitset & bm    & {booktabs} & {calc} & {caption} \\
+        caption3 & CJKfntef & {cprotect} & {ctex} & {ctexhook} \\
+        ctexpatch & enumitem & {etexcmds} & {etoolbox} & {everysel} \\
+        expl3 & fix-cm & {fontenc} & {fontspec} & {fontspec-xetex} \\
+        geometry & gettitlestring & {graphics} & {graphicx} & {hobsub} \\
+        hobsub-generic & hobsub-hyperref & {hopatch} & {hxetex} & {hycolor} \\
+        hyperref & ifluatex & {ifpdf} & {ifthen} & {ifvtex} \\
+        ifxetex & indentfirst & {infwarerr} & {intcalc} & {keyval} \\
+        kvdefinekeys & kvoptions & {kvsetkeys} & {l3keys2e} & {letltxmacro} \\
+        listings & longtable & {lstmisc} & {ltcaption} & {ltxcmds} \\
+        multirow & nameref & {pdfescape} & {pdftexcmds} & {refcount} \\
+        rerunfilecheck & stringenc & {suffix} & {titletoc} & {tocloft} \\
+        trig  & ulem  & {uniquecounter} & {url} & {xcolor} \\
+        xcolor-patch & xeCJK & {xeCJKfntef} & {xeCJK-listings} & {xparse} \\
+        xtemplate & zhnumber &       &       &  \\
+        \bottomrule
+    \end{tabular}%
+    \label{tab:addlabel}%
+\end{table}%
+
+以上宏包都已经加载过了，不要重复加载它们。
+
+\section{排队算法--matlab 源程序}
+
+\begin{lstlisting}[language=matlab]
+kk=2;[mdd,ndd]=size(dd);
+while ~isempty(V)
+[tmpd,j]=min(W(i,V));tmpj=V(j);
+for k=2:ndd
+[tmp1,jj]=min(dd(1,k)+W(dd(2,k),V));
+tmp2=V(jj);tt(k-1,:)=[tmp1,tmp2,jj];
+end
+tmp=[tmpd,tmpj,j;tt];[tmp3,tmp4]=min(tmp(:,1));
+if tmp3==tmpd, ss(1:2,kk)=[i;tmp(tmp4,2)];
+else,tmp5=find(ss(:,tmp4)~=0);tmp6=length(tmp5);
+if dd(2,tmp4)==ss(tmp6,tmp4)
+ss(1:tmp6+1,kk)=[ss(tmp5,tmp4);tmp(tmp4,2)];
+else, ss(1:3,kk)=[i;dd(2,tmp4);tmp(tmp4,2)];
+end;end
+dd=[dd,[tmp3;tmp(tmp4,2)]];V(tmp(tmp4,3))=[];
+[mdd,ndd]=size(dd);kk=kk+1;
+end; S=ss; D=dd(1,:);
+ \end{lstlisting}
+
+ \section{规划解决程序--lingo源代码}
+
+\begin{lstlisting}[language=c]
+kk=2;
+[mdd,ndd]=size(dd);
+while ~isempty(V)
+    [tmpd,j]=min(W(i,V));tmpj=V(j);
+for k=2:ndd
+    [tmp1,jj]=min(dd(1,k)+W(dd(2,k),V));
+    tmp2=V(jj);tt(k-1,:)=[tmp1,tmp2,jj];
+end
+    tmp=[tmpd,tmpj,j;tt];[tmp3,tmp4]=min(tmp(:,1));
+if tmp3==tmpd, ss(1:2,kk)=[i;tmp(tmp4,2)];
+else,tmp5=find(ss(:,tmp4)~=0);tmp6=length(tmp5);
+if dd(2,tmp4)==ss(tmp6,tmp4)
+    ss(1:tmp6+1,kk)=[ss(tmp5,tmp4);tmp(tmp4,2)];
+else, ss(1:3,kk)=[i;dd(2,tmp4);tmp(tmp4,2)];
+end;
+end
+    dd=[dd,[tmp3;tmp(tmp4,2)]];V(tmp(tmp4,3))=[];
+    [mdd,ndd]=size(dd);
+    kk=kk+1;
+end;
+S=ss;
+D=dd(1,:);
+ \end{lstlisting}
+\end{appendices}
+
+
+\end{document} 
