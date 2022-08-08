@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021/W32TeX) (preloaded format=xelatex 2021.11.5)  8 AUG 2022 09:53
+This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021/W32TeX) (preloaded format=xelatex 2021.11.5)  8 AUG 2022 10:53
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1246,9 +1246,10 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                \kern 2.00876pt
 (hyperref)                removed on input line 85.
 
+[2]
 File: figures//tui1.png Graphic file (type bmp)
 <figures//tui1.png>
-[2]
+
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `\leavevmode@ifvmode' on input line 95.
@@ -1360,12 +1361,11 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                \kern 2.00876pt
 (hyperref)                removed on input line 224.
 
-
+[5]
 Underfull \hbox (badness 10000) in paragraph at lines 230--232
 
  []
 
-[5]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `\leavevmode@ifvmode' on input line 266.
@@ -1531,7 +1531,7 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                \kern 2.00876pt
 (hyperref)                removed on input line 299.
 
-
+[7]
 Underfull \hbox (badness 10000) in paragraph at lines 303--307
 
  []
@@ -1574,7 +1574,6 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 
 File: figures//tui2.png Graphic file (type bmp)
 <figures//tui2.png>
-[7]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `\leavevmode@ifvmode' on input line 317.
@@ -1820,25 +1819,25 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                \kern 2.00876pt
 (hyperref)                removed on input line 503.
 
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\leavevmode@ifvmode' on input line 507.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                \kern 2.00876pt
-(hyperref)                removed on input line 507.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\leavevmode@ifvmode' on input line 507.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                \kern 2.00876pt
-(hyperref)                removed on input line 507.
-
 [11]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\leavevmode@ifvmode' on input line 507.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                \kern 2.00876pt
+(hyperref)                removed on input line 507.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\leavevmode@ifvmode' on input line 507.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                \kern 2.00876pt
+(hyperref)                removed on input line 507.
+
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `\leavevmode@ifvmode' on input line 531.
@@ -1902,14 +1901,8 @@ LaTeX Warning: There were undefined references.
 
 LaTeX Warning: There were multiply-defined labels.
 
-
-Package rerunfilecheck Warning: File `模仿.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `模仿.out':
-(rerunfilecheck)             Before: 81CFB1D131219AF67978160E1F5C240B;4585
-(rerunfilecheck)             After:  9EBF87E8515DF49E9CE0BD2D47388773;4565.
+Package rerunfilecheck Info: File `模仿.out' has not changed.
+(rerunfilecheck)             Checksum: 9EBF87E8515DF49E9CE0BD2D47388773;4565.
  ) 
 Here is how much of TeX's memory you used:
  33377 strings out of 476919
